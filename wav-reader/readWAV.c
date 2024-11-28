@@ -253,20 +253,22 @@ void reverseAudio(WAVFile *wavFile){
     
     int c = 0;
     
-    tempWavData = (short *)calloc(wavFile->header->dataSize/sizeof(short), sizeof(short));
+    short *tempWavData = (short *)calloc(wavFile->header->dataSize/sizeof(short), sizeof(short));
     
     if (tempWavData == NULL) {
         printf("\033[31mError\033[0m: data not allocated\n");
-        return 0;
+        return;
     }
-
-    for(int i = wavFile->header->dataSize/sizeof(short); i >= 0; i--){
+    
+    if (VERBOSE) printf("Reverting audio\n");
+    for(int i = (wavFile->header->dataSize/sizeof(short)) -1; i >= 0; i--){
         tempWavData[c] = wavFile->data[i];
         c++; 
     }
 
-    for(int i = 0; i < sizeof(tempWavData); i++){
+    for(int i = 0; i < wavFile->header->dataSize/sizeof(short); i++){
         wavFile->data[i] = tempWavData[i];
     }
+    free(tempWavData);
 }
 

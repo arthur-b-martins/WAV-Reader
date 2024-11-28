@@ -116,9 +116,21 @@ int main(int argc, char *argv[]){
     
     // copia o arquivo de entrada para um novo arquivo Tarefa 2
     free(wavFile.path);
-    wavFile.path = (char *)malloc(strlen(outputfolder) + strlen("\\audioCopiado.wav") + 1);
-    strcpy(wavFile.path, strcat(outputfolder, "\\audioCopiado.wav"));
+
+    char *tempPath = (char *)malloc(strlen(outputfolder) + strlen("\\audioCopiado.wav") + 1);
+    if (tempPath == NULL) {
+        printf("\033[31mError\033[0m: memory allocation failed\n");
+        return 0;
+    }
+
+    strcpy(tempPath,outputfolder);
+    strcat(tempPath, "\\audioCopiado.wav");
+    
+    wavFile.path = (char *)malloc(strlen(tempPath) + 1);
+    strcpy(wavFile.path, tempPath);
     writeWAV(&wavFile);
+
+
 
     // create an inverted audio
     copyWAVFile(wavFile, &invertedWavFile);
@@ -129,28 +141,45 @@ int main(int argc, char *argv[]){
     reverseAudio(&reverseWavFile);
 
     // define the inverted audio path 
-    invertedWavFile.path = (char *)malloc(strlen(outputfolder) + strlen("\\invertedAudio.wav") + 1);
+    tempPath = (char *)realloc(tempPath, (strlen(outputfolder) + strlen("\\invertedAudio.wav") + 1));
+    if (tempPath == NULL) {
+        printf("\033[31mError\033[0m: memory allocation failed\n");
+        return 0;
+    }
+
+    free(invertedWavFile.path);
+    invertedWavFile.path = (char *)malloc(strlen(tempPath) + 1);
     if(invertedWavFile.path == NULL){
         printf("\033[31mError\033[0m: path not allocated\n");
         return 0;
     }else{
-        strcpy(invertedWavFile.path, outputfolder);
-        strcat(invertedWavFile.path, "\\invertedAudio.wav");
-    }
-
-    // define the reverse audio path 
-    reverseWavFile.path = (char *)malloc(strlen(outputFolder) + strlen("\\reverseAudio.wav") + 1);
-    if(reverseWavFile.path == NULL){
-        printf("\033[31mError\033[0m: path not allocated\n");
-        return 0;
-    }else{
-        strcpy(reverseWavFile.path, outputfolder);
-        strcat(reverseWavFile.path, "\\reverseAudio.wav");
+        strcpy(tempPath, outputfolder);
+        strcat(tempPath, "\\invertedAudio.wav");
+        strcpy(invertedWavFile.path, tempPath);
     }
 
     writeWAV(&invertedWavFile);
 
+    // define the reverse audio path 
+    tempPath = (char *)realloc(tempPath, (strlen(outputfolder) + strlen("\\reverseAudio.wav") + 1));
+    if (tempPath == NULL) {
+        printf("\033[31mError\033[0m: memory allocation failed\n");
+        return 0;
+    }
+
+    reverseWavFile.path = (char *)malloc(strlen(tempPath) + 1);
+    if(reverseWavFile.path == NULL){
+        printf("\033[31mError\033[0m: path not allocated\n");
+        return 0;
+    }else{
+        strcpy(tempPath, outputfolder);
+        strcat(tempPath, "\\reverseAudio.wav");
+        strcpy(reverseWavFile.path, tempPath);
+    }
+
     writeWAV(&reverseWavFile);
+    free(tempPath);
+    
 
     // imprime o menor e o maior valor de amostra do arquivo de entrada (caso VERBOSE seja 1, o que é o padrão, imprime também qual canal é o menor e qual é o maior) Tarefa 3
     int smallest = getSmallestSample(wavFile);
