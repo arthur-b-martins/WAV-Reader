@@ -272,3 +272,44 @@ void reverseAudio(WAVFile *wavFile){
     free(tempWavData);
 }
 
+void convertToMono(WAVFile *wavFile){
+
+    if (wavFile->header->numChannels != 2){
+        printf("WavFile is already Mono.\n");
+        return;
+    }
+
+    int numSamples = wavFile->header->dataSize / (2 * sizeof(short));
+
+    short *tempWavData = (short *)malloc(numSamples * sizeof(short));
+    if (tempWavData == NULL) {
+        printf("Error: Memory allocation failed for tempWavData.\n");
+        return;
+    }
+
+    int c = 0;
+    for (int i = 0; i < wavFile->header->dataSize/sizeof(short); i+=2){
+        tempWavData[c] = (wavFile->data[i] + wavFile->data[i+1])/2;
+        c++;
+    }
+
+    free(wavFile->data);
+    wavFile->data = (short *)malloc(numSamples * sizeof(short));
+    if (wavFile->data == NULL) {
+        printf("Error: Memory allocation failed for wavFile->data.\n");
+        free(tempWavData);
+        return;
+    }
+
+    for (int i = 0; i < numSamples; i++){
+        wavFile->data[i] = tempWavData[i];
+    }
+
+    wavFile->header->numChannels = 1;
+    wavFile->header->byteRate = wavFile->header->sampleFrequence * wavFile->header->bitsPerSample / 8;
+    wavFile->header->bytesPerBlock = wavFile->header->bitsPerSample / 8;
+    wavFile->header->dataSize = numSamples * sizeof(short);
+    wavFile->header->fileSize = 36 + wavFile->header->dataSize;
+
+    free(tempWavData);
+}

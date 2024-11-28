@@ -105,7 +105,7 @@ int main(int argc, char *argv[]){
         return 0;
     }
 
-    WAVFile wavFile, invertedWavFile, reverseWavFile;
+    WAVFile wavFile, invertedWavFile, reverseWavFile, monoWavFile;
 
     if (!readWAV(inputFilePath, &wavFile)){
         printf("\033[31mError\033[0m: could not read WAV file\n");
@@ -139,6 +139,10 @@ int main(int argc, char *argv[]){
     // create a reverse audio 
     copyWAVFile(wavFile, &reverseWavFile);
     reverseAudio(&reverseWavFile);
+
+    // create a mono audio
+    copyWAVFile(wavFile, &monoWavFile);
+    convertToMono(&monoWavFile);    
 
     // define the inverted audio path 
     tempPath = (char *)realloc(tempPath, (strlen(outputfolder) + strlen("\\invertedAudio.wav") + 1));
@@ -178,6 +182,26 @@ int main(int argc, char *argv[]){
     }
 
     writeWAV(&reverseWavFile);
+    
+
+    // define the mono audio path 
+    tempPath = (char *)realloc(tempPath, (strlen(outputfolder) + strlen("\\monoAudio.wav") + 1));
+    if (tempPath == NULL) {
+        printf("\033[31mError\033[0m: memory allocation failed\n");
+        return 0;
+    }
+
+    monoWavFile.path = (char *)malloc(strlen(tempPath) + 1);
+    if(monoWavFile.path == NULL){
+        printf("\033[31mError\033[0m: path not allocated\n");
+        return 0;
+    }else{
+        strcpy(tempPath, outputfolder);
+        strcat(tempPath, "\\monoAudio.wav");
+        strcpy(monoWavFile.path, tempPath);
+    }
+
+    writeWAV(&monoWavFile);
     free(tempPath);
     
 
