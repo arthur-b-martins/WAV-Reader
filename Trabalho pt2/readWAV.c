@@ -13,13 +13,12 @@ Autores:
 int initHeader(WAVHeader *header, FILE *file){
     if(VERBOSE) printf("Initializing header...\n");
 
-    // Inicializa o header
     header->RIFFID[4] = '\0';
     header->fmtChunkType[4] = '\0';
     header->formatChunkID[4] = '\0';
     header->dataChunkID[4] = '\0';
     header->dataSize = 0;
-    // Leitura inicial para o RIFF e WAVE
+
     fread(header->RIFFID, 1, 4, file);
     if (strcmp(header->RIFFID, "RIFF") != 0) {
         printf("\033[31mError\033[0m: RIFF ID not found\n");
@@ -83,7 +82,6 @@ void printHeader(WAVHeader header){
     printf("\033[0m");
 }
 
-// Tarefa 2
 int copyHeader(WAVHeader header, WAVHeader *newHeader){
     /*
     do not copy metadata
@@ -154,7 +152,6 @@ int readWAV(char *filePath, WAVFile *wavFile){
     return 1;
 }
 
-//Tarefa 2
 int writeWAV(WAVFile *wavFile) {
     FILE *file = fopen(wavFile->path, "wb");
     if (file == NULL) {
@@ -197,7 +194,6 @@ void invertSamples(WAVFile *wavFile){
     }
 }
 
-//Tarefa 2
 int copyWAVFile(WAVFile wavFile, WAVFile *newWavFile){
     if (VERBOSE) printf("Copying WAV file\n");
     WAVHeader *header = (WAVHeader *)malloc(sizeof(WAVHeader));
@@ -225,7 +221,6 @@ void printWAVFileInfo(WAVFile wavFile){
     printf("\033[0m\n");
 }
 
-//Tarefa 3
 int getSmallestSample(WAVFile wavFile){
     int smallest = wavFile.data[0];
     int i = 0;
@@ -240,7 +235,6 @@ int getSmallestSample(WAVFile wavFile){
     return smallest;
 }
 
-//Tarefa 3
 int getBiggestSample(WAVFile wavFile){
     int biggest = wavFile.data[0];
     int i = 0;
@@ -254,3 +248,25 @@ int getBiggestSample(WAVFile wavFile){
     else if (VERBOSE) printf("Biggest sample on L channel\n");
     return biggest;
 }
+
+void reverseAudio(WAVFile *wavFile){
+    
+    int c = 0;
+    
+    tempWavData = (short *)calloc(wavFile->header->dataSize/sizeof(short), sizeof(short));
+    
+    if (tempWavData == NULL) {
+        printf("\033[31mError\033[0m: data not allocated\n");
+        return 0;
+    }
+
+    for(int i = wavFile->header->dataSize/sizeof(short); i >= 0; i--){
+        tempWavData[c] = wavFile->data[i];
+        c++; 
+    }
+
+    for(int i = 0; i < sizeof(tempWavData); i++){
+        wavFile->data[i] = tempWavData[i];
+    }
+}
+

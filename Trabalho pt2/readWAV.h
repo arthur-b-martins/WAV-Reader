@@ -49,4 +49,5 @@ int copyWAVFile(WAVFile wavFile, WAVFile *newWavFile);
 void printWAVFileInfo(WAVFile wavFile);
 int getSmallestSample(WAVFile wavFile);
 int getBiggestSample(WAVFile wavFile);
+void reverseAudio(WAVFile *wavFile);
 #endif // READWAV_H
