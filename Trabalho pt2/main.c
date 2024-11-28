@@ -12,12 +12,10 @@ short VERBOSE = 1;
 
 #include "readWAV.h"
 
-// tags
 #define INPUT_FILE_TAG 1
 #define OUTPUT_FOLDER_TAG 2
 #define VERBOSE_TAG 3
 
-// função que retorna o valor da tag
 short getTags(char* tag){
     if (strcmp(tag, "-i") == 0){
         return 1;
@@ -106,16 +104,14 @@ int main(int argc, char *argv[]){
         printf("\033[31mError\033[0m: caminho para a pasta de output nao especificado\n");
         return 0;
     }
-    // define o arquivo de saída e o arquivo de entrada
-    WAVFile wavFile, invertedWavFile;
 
-    // lê o arquivo de entrada
+    WAVFile wavFile, invertedWavFile, reverseWavFile;
+
     if (!readWAV(inputFilePath, &wavFile)){
         printf("\033[31mError\033[0m: could not read WAV file\n");
         return 0;
     }
     
-    // imprime informações do arquivo de entrada (Tarefa 1)
     printWAVFileInfo(wavFile);
     
     // copia o arquivo de entrada para um novo arquivo Tarefa 2
@@ -124,23 +120,37 @@ int main(int argc, char *argv[]){
     strcpy(wavFile.path, strcat(outputfolder, "\\audioCopiado.wav"));
     writeWAV(&wavFile);
 
-    // cria um arquivo invertido Tarefa 4
+    // create an inverted audio
     copyWAVFile(wavFile, &invertedWavFile);
     invertSamples(&invertedWavFile);
 
-    // define o caminho do arquivo invertido Tarefa 4
-    invertedWavFile.path = (char *)malloc(strlen(outputfolder) + strlen("\\audioInvertido.wav") + 1);
+    // create a reverse audio 
+    copyWAVFile(wavFile, &reverseWavFile);
+    reverseAudio(&reverseWavFile);
+
+    // define the inverted audio path 
+    invertedWavFile.path = (char *)malloc(strlen(outputfolder) + strlen("\\invertedAudio.wav") + 1);
     if(invertedWavFile.path == NULL){
         printf("\033[31mError\033[0m: path not allocated\n");
         return 0;
     }else{
         strcpy(invertedWavFile.path, outputfolder);
-        strcat(invertedWavFile.path, "\\audioInvertido.wav");
+        strcat(invertedWavFile.path, "\\invertedAudio.wav");
     }
 
-    // escreve o arquivo invertido Tarefa 4
+    // define the reverse audio path 
+    reverseWavFile.path = (char *)malloc(strlen(outputFolder) + strlen("\\reverseAudio.wav") + 1);
+    if(reverseWavFile.path == NULL){
+        printf("\033[31mError\033[0m: path not allocated\n");
+        return 0;
+    }else{
+        strcpy(reverseWavFile.path, outputfolder);
+        strcat(reverseWavFile.path, "\\reverseAudio.wav");
+    }
+
     writeWAV(&invertedWavFile);
 
+    writeWAV(&reverseWavFile);
 
     // imprime o menor e o maior valor de amostra do arquivo de entrada (caso VERBOSE seja 1, o que é o padrão, imprime também qual canal é o menor e qual é o maior) Tarefa 3
     int smallest = getSmallestSample(wavFile);
