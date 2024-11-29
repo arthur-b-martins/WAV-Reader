@@ -62,7 +62,6 @@ int initHeader(WAVHeader *header, FILE *file){
     return 0;
 }
 
-
 void printHeader(WAVHeader header){
     printf("\033[1;34mheader:\n");
     printf("\033[1;32m");
@@ -107,7 +106,6 @@ int copyHeader(WAVHeader header, WAVHeader *newHeader){
     strcpy(newHeader->formatChunkID, header.formatChunkID);
     strcpy(newHeader->dataChunkID, header.dataChunkID);
 }
-
 
 int readWAV(char *filePath, WAVFile *wavFile){
     printf("Reading WAV file...\n");
@@ -155,30 +153,32 @@ int readWAV(char *filePath, WAVFile *wavFile){
 int writeWAV(WAVFile *wavFile) {
     FILE *file = fopen(wavFile->path, "wb");
     if (file == NULL) {
-        printf("\033[31mError\033[0m: cannot open file for writing\n");
+        printf("\033[31mError\033[0m: Cannot open file for writing\n");
         return 0;
     }
 
-    fwrite(wavFile->header->RIFFID, 1, 4, file);
-    fwrite(&wavFile->header->fileSize, 4, 1, file);
-    fwrite(wavFile->header->fmtChunkType, 1, 4, file);
-    fwrite(wavFile->header->formatChunkID, 1, 4, file);
-    fwrite(&wavFile->header->formatChunkSize, 4, 1, file);
-    fwrite(&wavFile->header->formatType, 2, 1, file);
-    fwrite(&wavFile->header->numChannels, 2, 1, file);
-    fwrite(&wavFile->header->sampleFrequence, 4, 1, file);
-    fwrite(&wavFile->header->byteRate, 4, 1, file);
-    fwrite(&wavFile->header->bytesPerBlock, 2, 1, file);
-    fwrite(&wavFile->header->bitsPerSample, 2, 1, file);
-    fwrite(wavFile->header->dataChunkID, 1, 4, file);
-    fwrite(&wavFile->header->dataSize, 4, 1, file);
-    for (int i = 0; i < wavFile->header->dataSize/sizeof(short); i++) {
-        fwrite(&wavFile->data[i], sizeof(short), 1, file);
-    }
-    if(VERBOSE) printf("Data written\n");
+    fwrite(wavFile->header->RIFFID, sizeof(char), 4, file);                
+    fwrite(&wavFile->header->fileSize, sizeof(int), 1, file);               
+    fwrite(wavFile->header->fmtChunkType, sizeof(char), 4, file);           
+    fwrite(wavFile->header->formatChunkID, sizeof(char), 4, file);         
+    fwrite(&wavFile->header->formatChunkSize, sizeof(int), 1, file);       
+    fwrite(&wavFile->header->formatType, sizeof(short), 1, file);          
+    fwrite(&wavFile->header->numChannels, sizeof(short), 1, file);         
+    fwrite(&wavFile->header->sampleFrequence, sizeof(int), 1, file);       
+    fwrite(&wavFile->header->byteRate, sizeof(int), 1, file);              
+    fwrite(&wavFile->header->bytesPerBlock, sizeof(short), 1, file);       
+    fwrite(&wavFile->header->bitsPerSample, sizeof(short), 1, file);       
+    fwrite(wavFile->header->dataChunkID, sizeof(char), 4, file);           
+    fwrite(&wavFile->header->dataSize, sizeof(int), 1, file);              
+
+   
+    fwrite(wavFile->data, sizeof(short), wavFile->header->dataSize / sizeof(short), file);
+    if (VERBOSE) printf("Data Written\n");
+
     fclose(file);
     return 1;
 }
+
 
 void invertSamples(WAVFile *wavFile){
     if(wavFile->header->numChannels != 2){
@@ -280,8 +280,8 @@ void convertToMono(WAVFile *wavFile){
     }
 
     int numSamples = wavFile->header->dataSize / (2 * sizeof(short));
-
     short *tempWavData = (short *)malloc(numSamples * sizeof(short));
+    
     if (tempWavData == NULL) {
         printf("Error: Memory allocation failed for tempWavData.\n");
         return;
@@ -308,6 +308,52 @@ void convertToMono(WAVFile *wavFile){
     wavFile->header->numChannels = 1;
     wavFile->header->byteRate = wavFile->header->sampleFrequence * wavFile->header->bitsPerSample / 8;
     wavFile->header->bytesPerBlock = wavFile->header->bitsPerSample / 8;
+    wavFile->header->dataSize = numSamples * sizeof(short);
+    wavFile->header->fileSize = 36 + wavFile->header->dataSize;
+
+    free(tempWavData);
+}
+
+void compression(WAVFile *wavFile, int n) {
+    if (n <= 1) n = 2;
+    if (n > 10) {
+        printf("\033[31mWarning\033[0m: Compression rate is too high, audio quality will be significantly reduced.\n");
+    }
+
+    int totalSamples = wavFile->header->dataSize / sizeof(short); 
+    int numSamples = (totalSamples + n - 1) / n; 
+
+    short *tempWavData = (short *)malloc(numSamples * sizeof(short));
+    if (tempWavData == NULL) {
+        printf("Error: Memory allocation failed for tempWavData.\n");
+        return;
+    }
+
+    
+    int c = 0;
+    for (int i = 0; i < totalSamples; i += n) {
+        tempWavData[c] = wavFile->data[i];
+        c++;
+    }
+
+    
+    free(wavFile->data);
+    wavFile->data = (short *)malloc(numSamples * sizeof(short));
+    if (wavFile->data == NULL) {
+        printf("Error: Memory allocation failed for wavFile->data.\n");
+        free(tempWavData);
+        return;
+    }
+
+    
+    for (int i = 0; i < numSamples; i++) {
+        wavFile->data[i] = tempWavData[i];
+    }
+
+    
+    wavFile->header->sampleFrequence /= n; 
+    wavFile->header->byteRate = wavFile->header->sampleFrequence * wavFile->header->numChannels * wavFile->header->bitsPerSample / 8;
+    wavFile->header->bytesPerBlock = wavFile->header->numChannels * wavFile->header->bitsPerSample / 8;
     wavFile->header->dataSize = numSamples * sizeof(short);
     wavFile->header->fileSize = 36 + wavFile->header->dataSize;
 

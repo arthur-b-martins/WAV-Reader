@@ -105,7 +105,7 @@ int main(int argc, char *argv[]){
         return 0;
     }
 
-    WAVFile wavFile, invertedWavFile, reverseWavFile, monoWavFile;
+    WAVFile wavFile, invertedWavFile, reverseWavFile, monoWavFile, compressedWav;
 
     if (!readWAV(inputFilePath, &wavFile)){
         printf("\033[31mError\033[0m: could not read WAV file\n");
@@ -114,7 +114,6 @@ int main(int argc, char *argv[]){
     
     printWAVFileInfo(wavFile);
     
-    // copia o arquivo de entrada para um novo arquivo Tarefa 2
     free(wavFile.path);
 
     char *tempPath = (char *)malloc(strlen(outputfolder) + strlen("\\audioCopiado.wav") + 1);
@@ -131,7 +130,6 @@ int main(int argc, char *argv[]){
     writeWAV(&wavFile);
 
 
-
     // create an inverted audio
     copyWAVFile(wavFile, &invertedWavFile);
     invertSamples(&invertedWavFile);
@@ -142,7 +140,11 @@ int main(int argc, char *argv[]){
 
     // create a mono audio
     copyWAVFile(wavFile, &monoWavFile);
-    convertToMono(&monoWavFile);    
+    convertToMono(&monoWavFile);  
+
+    // create a compressed audio 
+    copyWAVFile(wavFile, &compressedWav);
+    compression(&compressedWav, 2); 
 
     // define the inverted audio path 
     tempPath = (char *)realloc(tempPath, (strlen(outputfolder) + strlen("\\invertedAudio.wav") + 1));
@@ -201,7 +203,27 @@ int main(int argc, char *argv[]){
         strcpy(monoWavFile.path, tempPath);
     }
 
+    
     writeWAV(&monoWavFile);
+
+    // define the compressed audio path 
+    tempPath = (char *)realloc(tempPath, (strlen(outputfolder) + strlen("\\compressedAudio.wav") + 1));
+    if (tempPath == NULL) {
+        printf("\033[31mError\033[0m: memory allocation failed\n");
+        return 0;
+    }
+
+    compressedWav.path = (char *)malloc(strlen(tempPath) + 1);
+    if(compressedWav.path == NULL){
+        printf("\033[31mError\033[0m: path not allocated\n");
+        return 0;
+    }else{
+        strcpy(tempPath, outputfolder);
+        strcat(tempPath, "\\compressedAudio.wav");
+        strcpy(compressedWav.path, tempPath);
+    }
+
+    writeWAV(&compressedWav);
     free(tempPath);
     
 

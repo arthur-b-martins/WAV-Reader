@@ -51,4 +51,5 @@ int getSmallestSample(WAVFile wavFile);
 int getBiggestSample(WAVFile wavFile);
 void reverseAudio(WAVFile *wavFile);
 void convertToMono(WAVFile *wavFile);
+void compression(WAVFile *wavFile, int n);
 #endif // READWAV_H
