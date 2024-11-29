@@ -116,14 +116,14 @@ int main(int argc, char *argv[]){
     
     free(wavFile.path);
 
-    char *tempPath = (char *)malloc(strlen(outputfolder) + strlen("\\audioCopiado.wav") + 1);
+    char *tempPath = (char *)malloc(strlen(outputfolder) + strlen("\\copiedAudio.wav") + 1);
     if (tempPath == NULL) {
         printf("\033[31mError\033[0m: memory allocation failed\n");
         return 0;
     }
 
     strcpy(tempPath,outputfolder);
-    strcat(tempPath, "\\audioCopiado.wav");
+    strcat(tempPath, "\\copiedAudio.wav");
     
     wavFile.path = (char *)malloc(strlen(tempPath) + 1);
     strcpy(wavFile.path, tempPath);
@@ -203,28 +203,28 @@ int main(int argc, char *argv[]){
         strcpy(monoWavFile.path, tempPath);
     }
 
-    
+    free(tempPath);
     writeWAV(&monoWavFile);
 
     // define the compressed audio path 
-    tempPath = (char *)realloc(tempPath, (strlen(outputfolder) + strlen("\\compressedAudio.wav") + 1));
-    if (tempPath == NULL) {
+    char *tempPath2 = (char *)malloc(strlen(outputfolder) + strlen("\\compressedAudio.wav") + 1);
+    if (tempPath2 == NULL) {
         printf("\033[31mError\033[0m: memory allocation failed\n");
         return 0;
     }
 
-    compressedWav.path = (char *)malloc(strlen(tempPath) + 1);
+    compressedWav.path = (char *)malloc(strlen(tempPath2) + 1);
     if(compressedWav.path == NULL){
         printf("\033[31mError\033[0m: path not allocated\n");
         return 0;
     }else{
-        strcpy(tempPath, outputfolder);
-        strcat(tempPath, "\\compressedAudio.wav");
-        strcpy(compressedWav.path, tempPath);
+        strcpy(tempPath2, outputfolder);
+        strcat(tempPath2, "\\compressedAudio.wav");
+        strcpy(compressedWav.path, tempPath2);
     }
 
     writeWAV(&compressedWav);
-    free(tempPath);
+    free(tempPath2);
     
 
     // imprime o menor e o maior valor de amostra do arquivo de entrada (caso VERBOSE seja 1, o que é o padrão, imprime também qual canal é o menor e qual é o maior) Tarefa 3
