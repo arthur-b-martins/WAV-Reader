@@ -80,14 +80,14 @@ int main() {
     printf("Operation completed successfully.\n");
     return 0;
 }
-
+```
 ## 🚀 How to Compile
 
 To compile the project, use a C compiler like `gcc`:
 
 ```bash
 gcc -o wav_tool readWAV.c main.c
-
+```
 ## 📂 Authors
 - Arthur Borges Martins
 - Davi Santos Oliveira 
